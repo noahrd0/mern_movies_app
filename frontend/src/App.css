@@ -1,38 +1,653 @@
-.App {
-  text-align: center;
+/* App.css - Styles pour l'application films */
+
+/* --- Styles généraux --- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+  color: #333;
+  background-color: #f3f4f6;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.app-container {
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
+}
+
+.btn {
+  cursor: pointer;
+  border: none;
+  border-radius: 0.375rem;
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+  gap: 0.5rem;
+  transition: background-color 0.2s;
+}
+
+/* --- Header --- */
+.app-header {
+  background-color: #1e40af;
+  color: white;
+  padding: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.app-header .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.app-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.btn-login {
+  background-color: #2563eb;
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+.btn-login:hover {
+  background-color: #1d4ed8;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+.btn-register {
+  background-color: #10b981;
+  color: white;
+}
+
+.btn-register:hover {
+  background-color: #059669;
+}
+
+.btn-logout {
+  background-color: #dc2626;
+  color: white;
+}
+
+.btn-logout:hover {
+  background-color: #b91c1c;
+}
+
+.auth-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* --- Navigation --- */
+.app-nav {
+  background-color: #1f2937;
+  color: white;
+  padding: 0.5rem;
+}
+
+.app-nav .container {
+  display: flex;
+  gap: 1rem;
+}
+
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  border: none;
+  background: none;
+  color: white;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.nav-btn:hover {
+  background-color: #374151;
+}
+
+.nav-btn.active {
+  background-color: #2563eb;
+}
+
+/* --- Main Content --- */
+.app-main {
+  flex-grow: 1;
+  padding: 1rem;
+}
+
+/* --- Movies Page --- */
+.movies-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  background-color: white;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.search-icon {
+  color: #6b7280;
+  margin-right: 0.5rem;
+}
+
+.search-input {
+  width: 100%;
+  border: none;
+  outline: none;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.movies-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.no-results {
+  text-align: center;
+  padding: 2rem;
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* --- Movie Card --- */
+.movie-card {
+  background-color: white;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transform: translateY(0);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.movie-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.movie-poster {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+}
+
+.movie-info {
+  padding: 1rem;
+}
+
+.movie-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.movie-meta {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.movie-rating {
+  display: flex;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.rating-text {
+  margin-left: 0.5rem;
+  color: #4b5563;
+}
+
+.rating-stars {
+  display: flex;
+}
+
+/* --- Movie Details --- */
+.movie-details {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+}
+
+.back-btn {
+  margin-bottom: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: #e5e7eb;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.back-btn:hover {
+  background-color: #d1d5db;
+}
+
+.details-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+@media (min-width: 768px) {
+  .details-content {
+    flex-direction: row;
   }
-  to {
-    transform: rotate(360deg);
+  
+  .movie-poster-section {
+    width: 33.333333%;
   }
+  
+  .movie-info-section {
+    width: 66.666667%;
+  }
+}
+
+.movie-poster-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-poster {
+  width: 100%;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.wishlist-btn {
+  margin-top: 1rem;
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: #db2777;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.wishlist-btn:hover:not(:disabled) {
+  background-color: #be185d;
+}
+
+.wishlist-btn.in-wishlist {
+  background-color: #d1d5db;
+  color: #4b5563;
+  cursor: default;
+}
+
+.detail-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+}
+
+.detail-meta {
+  color: #6b7280;
+  font-size: 1.125rem;
+}
+
+.detail-rating {
+  display: flex;
+  align-items: center;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.rating-value {
+  margin-left: 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.synopsis {
+  margin-top: 1rem;
+}
+
+.section-subheading {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.comments-section {
+  margin-top: 2rem;
+}
+
+.comment {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background-color: #f9fafb;
+  border-radius: 0.5rem;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.comment-user {
+  font-weight: 600;
+}
+
+.comment-rating {
+  display: flex;
+  align-items: center;
+}
+
+.comment-rating span {
+  margin-left: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.comment-text {
+  margin-top: 0.5rem;
+  color: #4b5563;
+}
+
+.comment-form {
+  margin-top: 1.5rem;
+}
+
+.form-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.login-required {
+  color: #dc2626;
+  margin-bottom: 0.75rem;
+}
+
+.rating-input {
+  margin-bottom: 0.75rem;
+}
+
+.stars-input {
+  display: flex;
+  margin-top: 0.25rem;
+}
+
+.star-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: #fbbf24;
+}
+
+.comment-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  resize: none;
+  margin-bottom: 0.75rem;
+  font-family: inherit;
+}
+
+.comment-textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #3b82f6;
+  border-color: #3b82f6;
+}
+
+.form-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #3b82f6;
+  border-color: #3b82f6;
+}
+
+.submit-btn {
+  padding: 0.5rem 1rem;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background-color: #1d4ed8;
+}
+
+.submit-btn:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* --- Wishlist Page --- */
+.wishlist-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.wishlist-items {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.wishlist-item {
+  display: flex;
+  background-color: white;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.wishlist-poster {
+  width: 6rem;
+  height: 8rem;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+.wishlist-info {
+  flex-grow: 1;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.remove-btn {
+  padding: 0.5rem;
+  background: none;
+  border: none;
+  color: #dc2626;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.remove-btn:hover {
+  color: #b91c1c;
+}
+
+.empty-wishlist {
+  text-align: center;
+  padding: 2rem;
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.discover-btn {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.discover-btn:hover {
+  background-color: #1d4ed8;
+}
+
+/* --- Modal Styles --- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modal-content {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 28rem;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.modal-header h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.close-btn:hover {
+  color: #374151;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  color: #4b5563;
+  margin-bottom: 0.5rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+}
+
+.comment-textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #3b82f6;
+  border-color: #3b82f6;
+}
+
+.form-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #3b82f6;
+  border-color: #3b82f6;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.form-footer {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.text-link {
+  background: none;
+  border: none;
+  color: #2563eb;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.text-link:hover {
+  color: #1d4ed8;
+}
+
+.register-btn {
+  background-color: #10b981;
+}
+
+.register-btn:hover:not(:disabled) {
+  background-color: #059669;
+}
+
+.error-text {
+  color: #dc2626;
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+}
+
+/* --- Footer --- */
+.app-footer {
+  background-color: #1f2937;
+  color: white;
+  padding: 1rem;
+  text-align: center;
 }
