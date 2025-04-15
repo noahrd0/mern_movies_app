@@ -11,6 +11,8 @@ services:
     command: ["npm", "run", "dev"]
     networks:
       - mern_network
+    depends_on:
+      - db
 
   frontend:
     build:
@@ -34,8 +36,6 @@ services:
       - mongo_data:/data/db # Volume pour des donnees persistantes
     networks:
       - mern_network
-    depends_on:
-      - backend
 
 networks:
   mern_network:
