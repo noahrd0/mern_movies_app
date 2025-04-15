@@ -1,0 +1,44 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend:/app
+      - /app/node_modules # Ignore node_modules
+    ports:
+      - "5000:5000"
+    command: ["npm", "run", "dev"]
+    networks:
+      - mern_network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules # Ignore node_modules
+    ports:
+      - "3000:3000"
+    command: ["npm", "start"]
+    networks:
+      - mern_network
+
+  db:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db # Volume pour des donnees persistantes
+    networks:
+      - mern_network
+    depends_on:
+      - backend
+
+networks:
+  mern_network:
+
+volumes:
+  mongo_data:
