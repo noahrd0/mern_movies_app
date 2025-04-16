@@ -102,3 +102,39 @@ export const addCommentToMovie = async (req, res) => {
     res.status(500).json({ error: "Erreur lors de l'ajout du commentaire" });
   }
 };
+
+// GET /api/movies/filter?search=&genre=&page=
+export const filterMovies = async (req, res) => {
+  const { search = '', genre = '', page = 1 } = req.query;
+  const limit = 100;
+  const skip = (parseInt(page) - 1) * limit;
+
+  try {
+    const query = {};
+
+    if (search) {
+      const regex = new RegExp(search, 'i');
+      query.$or = [
+        { title: regex },
+        { director: regex }
+      ];
+    }
+
+    if (genre) {
+      query.genres = genre;
+    }
+
+    const total = await Movie.countDocuments(query);
+    const movies = await Movie.find(query).skip(skip).limit(limit);
+
+    res.json({
+      movies,
+      total,
+      page: parseInt(page),
+      pages: Math.ceil(total / limit),
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Erreur lors du filtrage", details: err.message });
+  }
+};
+
