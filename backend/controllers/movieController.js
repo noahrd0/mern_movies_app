@@ -1,7 +1,7 @@
 import Movie from '../models/Movie.js';
 import mongoose from 'mongoose';
 
-// GET /api/movies
+// GET /api/movies → tous les films
 export const getAllMovies = async (req, res) => {
   try {
     const movies = await Movie.find().limit(100);
@@ -11,21 +11,31 @@ export const getAllMovies = async (req, res) => {
   }
 };
 
-// GET /api/movies/search/:param → par ID ou titre
-export const searchByIdOrTitle = async (req, res) => {
-  const { param } = req.params;
+// GET /api/movies/:id → film par ID
+export const getMovieById = async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ error: "ID invalide" });
+  }
 
   try {
-    // Vérifie si le param est un ObjectId valide
-    if (mongoose.Types.ObjectId.isValid(param)) {
-      const movie = await Movie.findById(param);
-      if (movie) {
-        return res.json(movie); // trouvé par ID, on sort direct
-      }
+    const movie = await Movie.findById(id);
+    if (!movie) {
+      return res.status(404).json({ error: "Film non trouvé" });
     }
+    res.json(movie);
+  } catch (err) {
+    res.status(500).json({ error: "Erreur lors de la récupération du film" });
+  }
+};
 
-    // Sinon, on cherche par titre (regex insensible à la casse)
-    const regex = new RegExp(param, 'i');
+// GET /api/movies/search/:title → recherche par titre
+export const searchMoviesByTitle = async (req, res) => {
+  const { title } = req.params;
+
+  try {
+    const regex = new RegExp(title, 'i');
     const movies = await Movie.find({ title: regex });
 
     if (!movies || movies.length === 0) {
@@ -34,11 +44,11 @@ export const searchByIdOrTitle = async (req, res) => {
 
     res.json(movies);
   } catch (err) {
-    res.status(500).json({ error: "Erreur lors de la recherche", details: err.message });
+    res.status(500).json({ error: "Erreur de recherche", details: err.message });
   }
 };
 
-// GET /api/movies/genre/:name
+// GET /api/movies/genre/:name → films par genre
 export const getMoviesByGenre = async (req, res) => {
   try {
     const genre = req.params.name;
