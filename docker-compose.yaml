@@ -7,7 +7,7 @@ services:
       - ./backend:/app
       - /app/node_modules # Ignore node_modules
     ports:
-      - "5000:5000"
+      - "5001:5001"
     command: ["npm", "run", "dev"]
     networks:
       - mern_network

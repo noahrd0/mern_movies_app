@@ -10,7 +10,7 @@ import importDataIfEmpty from './utils/importDataIfEmpty.js';
 dotenv.config();
 
 const app = express();
-const PORT = 5000;
+const PORT = 5001;
 
 const corsOptions = {
     origin: 'http://localhost:3000',

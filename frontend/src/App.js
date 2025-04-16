@@ -12,62 +12,19 @@ import RegisterModal from './components/auth/RegisterModal';
 import './App.css';
 
 function App() {
-  const [movies, setMovies] = useState([]);
   const [wishlist, setWishlist] = useState([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState('');
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Effet pour charger les films au démarrage depuis l'API
+  // Vérifier si l'utilisateur est connecté au chargement
   useEffect(() => {
-    const fetchMovies = async () => {
-      try {
-        setIsLoading(true);
-        const response = await fetch('http://localhost:5000/api/movies');
-        
-        if (!response.ok) {
-          throw new Error('Erreur lors du chargement des films');
-        }
-        
-        const moviesData = await response.json();
-        
-        // Transformer les données pour correspondre à notre structure
-        const formattedMovies = moviesData.map(movie => ({
-          id: movie._id,
-          id_tmdb: movie.id_tmdb,
-          title: movie.title,
-          original_title: movie.original_title,
-          director: movie.director || "Réalisateur inconnu",
-          year: new Date(movie.release_date).getFullYear(),
-          poster: movie.poster_path || "https://via.placeholder.com/250x370",
-          description: movie.overview,
-          rating: movie.vote_average / 2, // Convertir la note sur 10 à une note sur 5
-          runtime: movie.runtime,
-          genres: movie.genres,
-          popularity: movie.popularity,
-          comments: movie.comments || [] // S'il n'y a pas de commentaires dans l'API, on initialise un tableau vide
-        }));
-        
-        setMovies(formattedMovies);
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Erreur lors de la récupération des films:", error);
-        setError(error.message);
-        setIsLoading(false);
-      }
-    };
-
-    fetchMovies();
-    
-    // Vérifier si l'utilisateur est connecté au chargement
-    const token = localStorage.getItem('token');
-    if (token) {
-      // Si un token existe, on pourrait vérifier sa validité via une API
-      const storedUsername = localStorage.getItem('username');
-      if (storedUsername) {
+    const checkLoginStatus = () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        const storedUsername = localStorage.getItem('username');
         setIsLoggedIn(true);
         setUsername(storedUsername);
         
@@ -77,7 +34,9 @@ function App() {
           setWishlist(JSON.parse(savedWishlist));
         }
       }
-    }
+    };
+
+    checkLoginStatus();
   }, []);
 
   // Fonction pour ajouter un film à la wishlist
@@ -112,7 +71,8 @@ function App() {
   // Fonction de connexion
   const login = async (email, password) => {
     try {
-      const response = await fetch('http://localhost:5000/api/user/login', {
+      setIsLoading(true);
+      const response = await fetch('http://localhost:5001/api/user/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -147,13 +107,16 @@ function App() {
     } catch (error) {
       console.error('Erreur lors de la connexion :', error);
       alert('Une erreur est survenue. Veuillez réessayer.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   // Fonction d'inscription
   const register = async (username, email, password) => {
     try {
-      const response = await fetch('http://localhost:5000/api/user/register', {
+      setIsLoading(true);
+      const response = await fetch('http://localhost:5001/api/user/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -179,6 +142,8 @@ function App() {
     } catch (error) {
       console.error('Erreur lors de l\'inscription :', error);
       alert('Une erreur est survenue. Veuillez réessayer.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -188,7 +153,6 @@ function App() {
     setUsername('');
     localStorage.removeItem('token');
     localStorage.removeItem('username');
-    // On garde la wishlist en mémoire locale pour quand l'utilisateur se reconnectera
   };
 
   return (
@@ -208,38 +172,32 @@ function App() {
         
         {/* Main Content */}
         <main className="app-main container">
-          {isLoading ? (
-            <div className="loading">Chargement des films...</div>
-          ) : error ? (
-            <div className="error">Erreur: {error}</div>
-          ) : (
-            <Routes>
-              <Route 
-                path="/" 
-                element={<MoviesPage movies={movies} />} 
-              />
-              <Route 
-                path="/movies/:id" 
-                element={
-                  <MovieDetailsPage 
-                    onAddToWishlist={addToWishlist}
-                    isLoggedIn={isLoggedIn}
-                    wishlist={wishlist}
-                  />
-                } 
-              />
-              <Route 
-                path="/wishlist" 
-                element={
-                  <WishlistPage 
-                    wishlist={wishlist} 
-                    onRemoveFromWishlist={removeFromWishlist}
-                  />
-                } 
-              />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          )}
+          <Routes>
+            <Route 
+              path="/" 
+              element={<MoviesPage />} 
+            />
+            <Route 
+              path="/movies/:id" 
+              element={
+                <MovieDetailsPage 
+                  onAddToWishlist={addToWishlist}
+                  isLoggedIn={isLoggedIn}
+                  wishlist={wishlist}
+                />
+              } 
+            />
+            <Route 
+              path="/wishlist" 
+              element={
+                <WishlistPage 
+                  wishlist={wishlist} 
+                  onRemoveFromWishlist={removeFromWishlist}
+                />
+              } 
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
         </main>
         
         {/* Footer */}
@@ -254,6 +212,7 @@ function App() {
               setShowLoginModal(false);
               setShowRegisterModal(true);
             }}
+            isLoading={isLoading}
           />
         )}
         
@@ -265,6 +224,7 @@ function App() {
               setShowRegisterModal(false);
               setShowLoginModal(true);
             }}
+            isLoading={isLoading}
           />
         )}
       </div>

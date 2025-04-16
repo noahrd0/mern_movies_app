@@ -16,7 +16,7 @@ function MovieDetailsPage({ onAddToWishlist, isLoggedIn, wishlist }) {
     const fetchMovieDetails = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`http://localhost:5000/api/movies/${id}`);
+        const response = await fetch(`http://localhost:5001/api/movies/${id}`);
         
         if (!response.ok) {
           throw new Error('Erreur lors du chargement des détails du film');
@@ -63,7 +63,7 @@ function MovieDetailsPage({ onAddToWishlist, isLoggedIn, wishlist }) {
     
     try {
       // Envoi du commentaire à l'API
-      const response = await fetch(`http://localhost:5000/api/movies/${movieId}/comments`, {
+      const response = await fetch(`http://localhost:5001/api/movies/${movieId}/comments`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -80,7 +80,7 @@ function MovieDetailsPage({ onAddToWishlist, isLoggedIn, wishlist }) {
       }
       
       // Recharger les données du film pour avoir les informations à jour
-      const updatedResponse = await fetch(`http://localhost:5000/api/movies/${id}`);
+      const updatedResponse = await fetch(`http://localhost:5001/api/movies/${id}`);
       const updatedMovieData = await updatedResponse.json();
       
       // Mettre à jour l'état du film
