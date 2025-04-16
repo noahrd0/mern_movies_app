@@ -3,37 +3,44 @@ const API_URL = 'http://localhost:5000/api';
 // Service pour les films
 export const MovieService = {
   // Récupérer tous les films
-  getAll: async () => {
+  getAll: async (page = 1) => {
     try {
-      const response = await fetch(`${API_URL}/movies`);
-
+      const params = new URLSearchParams({ page });
+      const response = await fetch(`${API_URL}/movies?${params.toString()}`);
+  
       if (!response.ok) {
         throw new Error('Erreur lors du chargement des films');
       }
-
-      const moviesData = await response.json();
-
-      // Transformer les données pour correspondre à notre structure
-      return moviesData.map(movie => ({
+  
+      const data = await response.json();
+  
+      const formatted = data.movies.map(movie => ({
         id: movie._id,
         id_tmdb: movie.id_tmdb,
         title: movie.title,
         original_title: movie.original_title,
         director: movie.director || "Réalisateur inconnu",
         year: new Date(movie.release_date).getFullYear(),
-        poster: movie.poster_path || "https://via.placeholder.com/250x370",
+        poster: movie.poster_path || "https://placehold.co/250x370?text=Aucune+image",
         description: movie.overview,
-        rating: movie.vote_average / 2, // Convertir la note sur 10 à une note sur 5
+        rating: movie.vote_average / 2,
         runtime: movie.runtime,
         genres: movie.genres,
         popularity: movie.popularity,
         comments: movie.comments || []
       }));
+  
+      return {
+        movies: formatted,
+        total: data.total,
+        page: data.page,
+        pages: data.pages
+      };
     } catch (error) {
       console.error("Erreur API:", error);
       throw error;
     }
-  },
+  },  
 
   // Récupérer les films filtrés par recherche et genre
   filter: async (search = '', genre = '', page = 1) => {
@@ -58,7 +65,7 @@ export const MovieService = {
         original_title: movie.original_title,
         director: movie.director || "Réalisateur inconnu",
         year: new Date(movie.release_date).getFullYear(),
-        poster: movie.poster_path || "https://via.placeholder.com/250x370",
+        poster: movie.poster_path || "https://placehold.co/250x370?text=Aucune+image",
         description: movie.overview,
         rating: movie.vote_average / 2,
         runtime: movie.runtime,
@@ -79,8 +86,6 @@ export const MovieService = {
     }
   },
 
-
-
   // Récupérer un film par son ID
   getById: async (id) => {
     try {
@@ -100,7 +105,7 @@ export const MovieService = {
         original_title: movieData.original_title,
         director: movieData.director || "Réalisateur inconnu",
         year: new Date(movieData.release_date).getFullYear(),
-        poster: movieData.poster_path || "https://via.placeholder.com/250x370",
+        poster: movieData.poster_path || "https://placehold.co/250x370?text=Aucune+image",
         description: movieData.overview,
         rating: movieData.vote_average / 2,
         runtime: movieData.runtime,
@@ -146,6 +151,39 @@ export const MovieService = {
     }
   }
 };
+
+export const ActorService = {
+  search: async (term) => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/actors/search/${term}`);
+      if (!res.ok) throw new Error("Erreur lors de la recherche d'acteurs");
+      return await res.json();
+    } catch (err) {
+      console.error("Erreur ActorService:", err);
+      return [];
+    }
+  },
+  getAll: async (page = 1) => {
+    try {
+      const response = await fetch(`${API_URL}/actors?page=${page}`);
+  
+      if (!response.ok) {
+        throw new Error("Erreur lors du chargement des acteurs");
+      }
+  
+      const data = await response.json();
+  
+      return {
+        actors: data.actors || [],
+        pages: data.pages || 1
+      };
+    } catch (error) {
+      console.error("Erreur API Acteurs:", error);
+      return { actors: [], pages: 1 };
+    }
+  }  
+};
+
 
 // Service pour l'authentification
 export const AuthService = {

@@ -1,13 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { XCircle } from 'lucide-react';
-import MovieCard from '../components/movies/MovieCard';
+import SearchCard from '../components/common/SearchCard';
 
 function WishlistPage({ wishlist, onRemoveFromWishlist }) {
   return (
     <div className="wishlist-page">
       <h2 className="section-title">Ma Wishlist</h2>
-      
+
       {wishlist.length === 0 ? (
         <div className="empty-wishlist">
           <p>Votre wishlist est vide.</p>
@@ -16,8 +16,8 @@ function WishlistPage({ wishlist, onRemoveFromWishlist }) {
       ) : (
         <div className="wishlist-movies">
           {wishlist.map(movie => (
-            <div key={movie.id} className="wishlist-item">
-              <MovieCard movie={movie} />
+            <div key={movie.id} className="wishlist-item-wrapper">
+              <SearchCard type="movie" data={movie} />
               <button 
                 className="remove-btn" 
                 onClick={() => onRemoveFromWishlist(movie.id)}

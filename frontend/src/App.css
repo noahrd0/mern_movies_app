@@ -270,11 +270,11 @@ body {
   .details-content {
     flex-direction: row;
   }
-  
+
   .movie-poster-section {
     width: 33.333333%;
   }
-  
+
   .movie-info-section {
     width: 66.666667%;
   }
@@ -716,4 +716,10 @@ body {
 
 .page-btn:hover {
   background-color: #93c5fd;
+}
+
+.ellipsis {
+  padding: 0.5rem;
+  color: #6b7280;
+  user-select: none;
 }

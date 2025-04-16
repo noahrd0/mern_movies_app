@@ -32,7 +32,7 @@ function MovieDetailsPage({ onAddToWishlist, isLoggedIn, wishlist }) {
           original_title: movieData.original_title,
           director: movieData.director || "Réalisateur inconnu",
           year: new Date(movieData.release_date).getFullYear(),
-          poster: movieData.poster_path || "https://via.placeholder.com/250x370",
+          poster: movieData.poster_path || "https://placehold.co/250x370?text=Aucune+image",
           description: movieData.overview,
           rating: movieData.vote_average / 2, // Convertir la note sur 10 à une note sur 5
           runtime: movieData.runtime,
