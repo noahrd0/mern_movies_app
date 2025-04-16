@@ -130,25 +130,75 @@ function App() {
   };
 
   // Fonction de connexion
-  const login = (username, password) => {
-    // Simuler une connexion réussie
-    setIsLoggedIn(true);
-    setUsername(username);
-    setShowLoginModal(false);
+  const login = async (email, password) => {
+    try {
+      const response = await fetch('http://localhost:5000/api/user/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        // Connexion réussie
+        setIsLoggedIn(true);
+        setUsername(data.user.name);
+        setShowLoginModal(false);
+  
+        // Stocker le token JWT dans le stockage local
+        localStorage.setItem('token', data.token);
+  
+        console.log('Connexion réussie :', data);
+      } else {
+        // Gérer les erreurs (ex. : mauvais identifiants)
+        console.error('Erreur de connexion :', data.message);
+        alert(data.message);
+      }
+    } catch (error) {
+      console.error('Erreur lors de la connexion :', error);
+      alert('Une erreur est survenue. Veuillez réessayer.');
+    }
   };
 
   // Fonction d'inscription
-  const register = (username, email, password) => {
-    // Simuler une inscription réussie
-    setIsLoggedIn(true);
-    setUsername(username);
-    setShowRegisterModal(false);
+  const register = async (username, email, password) => {
+    try {
+      const response = await fetch('http://localhost:5000/api/user/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: username, email, password }),
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        setIsLoggedIn(true);
+        setUsername(data.user.name);
+        setShowRegisterModal(false);
+  
+        localStorage.setItem('token', data.token);
+  
+        console.log('Inscription réussie :', data);
+      } else {
+        console.error('Erreur d\'inscription :', data.message);
+        alert(data.message);
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'inscription :', error);
+      alert('Une erreur est survenue. Veuillez réessayer.');
+    }
   };
 
   // Fonction de déconnexion
   const logout = () => {
     setIsLoggedIn(false);
     setUsername('');
+    localStorage.removeItem('token');
   };
 
   // Rendu des pages en fonction de la page active
@@ -176,7 +226,7 @@ function App() {
       case 'wishlist':
         return <WishlistPage 
                  wishlist={wishlist} 
-                 onRemoveFromWishlist={removeFromWishlist} 
+                 onRemoveFromWishlist={removeFromWishlist}
                  onMovieClick={(movie) => {
                    setSelectedMovie(movie);
                    setActivePage('movieDetails');
@@ -540,13 +590,13 @@ function RatingStars({ rating, size = 20 }) {
 
 // Composant pour la modale de connexion
 function LoginModal({ onClose, onLogin, onSwitchToRegister }) {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (username && password) {
-      onLogin(username, password);
+    if (email && password) {
+      onLogin(email, password);
     }
   };
   
@@ -562,13 +612,13 @@ function LoginModal({ onClose, onLogin, onSwitchToRegister }) {
         
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="username">Nom d'utilisateur</label>
+            <label htmlFor="email">Email</label>
             <input
-              type="text"
-              id="username"
+              type="email"
+              id="email"
               className="form-input"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>
@@ -588,7 +638,7 @@ function LoginModal({ onClose, onLogin, onSwitchToRegister }) {
           <button
             type="submit"
             className="submit-btn full-width"
-            disabled={!username || !password}
+            disabled={!email || !password}
           >
             Se connecter
           </button>
