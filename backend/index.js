@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 import cors from 'cors';
 import connectDB from './config/database.js';
 import userRoutes from './routes/UserRoutes.js';
+import movieRoutes from './routes/movies.js';
+import importMoviesIfEmpty from './scripts/autoImport.js';
 
 dotenv.config();
 
@@ -14,17 +16,21 @@ const corsOptions = {
     methods: ['GET', 'POST', 'PUT', 'DELETE'], 
     credentials: true,
 };
-app.use(cors(corsOptions));
 
+app.use(cors(corsOptions));
 app.use(express.json());
 
-app.get('/', (req, res) => {
-    res.send('backend running');
-});
-
 app.use('/api/user', userRoutes);
+app.use('/api/movies', movieRoutes);
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
     console.log(`backend running at http://localhost:${PORT}`);
     connectDB();
+    await importMoviesIfEmpty();
 });
+
+
+app.get('/', (req, res) => {
+  res.send('Backend running');
+});
+
