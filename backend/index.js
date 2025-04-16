@@ -4,7 +4,8 @@ import cors from 'cors';
 import connectDB from './config/database.js';
 import userRoutes from './routes/UserRoutes.js';
 import movieRoutes from './routes/movies.js';
-import importMoviesIfEmpty from './scripts/autoImport.js';
+import actorRoutes from './routes/actor.js';
+import importDataIfEmpty from './utils/importDataIfEmpty.js';
 
 dotenv.config();
 
@@ -22,11 +23,12 @@ app.use(express.json());
 
 app.use('/api/user', userRoutes);
 app.use('/api/movies', movieRoutes);
+app.use('/api/actors', actorRoutes);
 
 app.listen(PORT, async () => {
     console.log(`backend running at http://localhost:${PORT}`);
     connectDB();
-    await importMoviesIfEmpty();
+    await importDataIfEmpty();
 });
 
 
