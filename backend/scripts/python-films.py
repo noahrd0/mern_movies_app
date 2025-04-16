@@ -2,8 +2,7 @@ import requests
 import json
 import time
 
-API_KEY = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI0MzJkYmViOTQ3ZmU2NDVkNmIwMDgyMDQwNzQyOTVjNiIsIm5iZiI6MTcwMDA1MjkzMC4xMjcsInN1YiI6IjY1NTRiZmMyZWE4NGM3MTA5NmRjZTBlZSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.nGw-hZrE-y9wKSocbMGplF4wK690YLKOGBXGED0xaZA"  # 🔐 Mets ici ta clé API TMDb
-OUTPUT_FILE = "tmdb_films.json"
+API_KEY = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI0MzJkYmViOTQ3ZmU2NDVkNmIwMDgyMDQwNzQyOTVjNiIsIm5iZiI6MTcwMDA1MjkzMC4xMjcsInN1YiI6IjY1NTRiZmMyZWE4NGM3MTA5NmRjZTBlZSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.nGw-hZrE-y9wKSocbMGplF4wK690YLKOGBXGED0xaZA"  # 🔐 Remets ta clé API ici
 BASE_URL = "https://api.themoviedb.org/3"
 
 headers = {
@@ -12,27 +11,47 @@ headers = {
 }
 
 params = {
-    "language": "fr-FR",  # ou "en-US"
+    "language": "fr-FR",
     "page": 1
 }
 
-all_movies = []
+films_with_cast = []
+actors_with_movies = {}
 
-# 🔁 On récupère les 5 premières pages de films populaires
-for page in range(1, 101):
+for page in range(1, 6):  # 🔁 5 pages, ajuste selon besoin
     print(f"📥 Récupération page {page}")
     params["page"] = page
     res = requests.get(f"{BASE_URL}/movie/popular", headers=headers, params=params)
-    data = res.json()
 
-    for movie in data.get("results", []):
+    if res.status_code != 200:
+        print(f"❌ Erreur lors de la récupération des films page {page} (status {res.status_code})")
+        continue
+
+    data = res.json()
+    if not data.get("results"):
+        print(f"⚠️ Pas de résultats pour la page {page}")
+        continue
+
+    for movie in data["results"]:
         movie_id = movie["id"]
 
-        # 🎯 Appel secondaire pour les détails du film
-        details = requests.get(f"{BASE_URL}/movie/{movie_id}", headers=headers, params={"language": "fr-FR"}).json()
+        # 🔎 Détails du film
+        details_res = requests.get(f"{BASE_URL}/movie/{movie_id}", headers=headers, params={"language": "fr-FR"})
+        if details_res.status_code != 200:
+            print(f"❌ Erreur détails film {movie_id} (status {details_res.status_code})")
+            continue
+        details = details_res.json()
 
-        # 🔧 Simplification des données à stocker
-        film_data = {
+        # 👥 Casting
+        credits_res = requests.get(f"{BASE_URL}/movie/{movie_id}/credits", headers=headers)
+        if credits_res.status_code != 200:
+            print(f"❌ Erreur crédits film {movie_id} (status {credits_res.status_code})")
+            continue
+        credits = credits_res.json()
+
+        cast = credits.get("cast", [])[:10]
+
+        movie_info = {
             "id_tmdb": details.get("id"),
             "title": details.get("title"),
             "original_title": details.get("original_title"),
@@ -43,14 +62,45 @@ for page in range(1, 101):
             "genres": [genre["name"] for genre in details.get("genres", [])],
             "language": details.get("original_language"),
             "runtime": details.get("runtime"),
-            "popularity": details.get("popularity")
+            "popularity": details.get("popularity"),
+            "cast": []
         }
 
-        all_movies.append(film_data)
-        time.sleep(0.2)  # pour respecter les limites d'API
+        for actor in cast:
+            actor_info = {
+                "id": actor.get("id"),
+                "name": actor.get("name"),
+                "character": actor.get("character"),
+                "profile_path": f"https://image.tmdb.org/t/p/w500{actor.get('profile_path')}" if actor.get("profile_path") else None
+            }
 
-# 💾 Sauvegarde JSON
-with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
-    json.dump(all_movies, f, ensure_ascii=False, indent=4)
+            movie_info["cast"].append(actor_info)
 
-print(f"\n✅ {len(all_movies)} films sauvegardés dans '{OUTPUT_FILE}'")
+            actor_id = actor["id"]
+            if actor_id not in actors_with_movies:
+                actors_with_movies[actor_id] = {
+                    "id": actor_id,
+                    "name": actor["name"],
+                    "profile_path": actor_info["profile_path"],
+                    "movies": []
+                }
+
+            actors_with_movies[actor_id]["movies"].append({
+                "id_tmdb": movie_info["id_tmdb"],
+                "title": movie_info["title"],
+                "release_date": movie_info["release_date"],
+                "character": actor.get("character")
+            })
+
+        films_with_cast.append(movie_info)
+        time.sleep(0.3)  # pour respecter les limites API
+
+# 💾 Sauvegarde
+with open("films_with_cast.json", "w", encoding="utf-8") as f:
+    json.dump(films_with_cast, f, ensure_ascii=False, indent=4)
+
+with open("actors_with_movies.json", "w", encoding="utf-8") as f:
+    json.dump(list(actors_with_movies.values()), f, ensure_ascii=False, indent=4)
+
+print(f"\n✅ {len(films_with_cast)} films enregistrés dans 'films_with_cast.json'")
+print(f"✅ {len(actors_with_movies)} acteurs enregistrés dans 'actors_with_movies.json'")
