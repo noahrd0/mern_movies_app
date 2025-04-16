@@ -1,4 +1,5 @@
 import Movie from '../models/Movie.js';
+import User from '../models/UserModel.js';
 import mongoose from 'mongoose';
 
 // GET /api/movies → tous les films
@@ -56,5 +57,48 @@ export const getMoviesByGenre = async (req, res) => {
     res.json(movies);
   } catch (err) {
     res.status(500).json({ error: "Erreur lors du filtrage par genre" });
+  }
+};
+
+// POST /api/movies/comments/:id → ajouter un commentaire
+export const addCommentToMovie = async (req, res) => {
+  const { id } = req.params;
+  const { text, rating } = req.body;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ error: "ID invalide" });
+  }
+
+  if (!rating) {
+    return res.status(400).json({ error: "Note requise" });
+  }
+
+  try {
+
+    const movie = await Movie.findById(id);
+    if (!movie) {
+      return res.status(404).json({ error: "Film non trouvé" });
+    }
+
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "Utilisateur non trouvé" });
+    }
+
+    // Si l'utilisateur a dejà commenté ce film, on met à jour le commentaire
+    const existingComment = movie.comments.find(comment => comment.userId.toString() === userId);
+    if (existingComment) {
+      existingComment.content = text;
+      existingComment.rating = rating;
+    } else {
+      // Sinon, on ajoute le commentaire
+      movie.comments.push({ userId: userId, userName: user.name, content: text, rating });
+    }
+    await movie.save();
+
+    res.status(201).json(movie);
+  } catch (err) {
+    res.status(500).json({ error: "Erreur lors de l'ajout du commentaire" });
   }
 };

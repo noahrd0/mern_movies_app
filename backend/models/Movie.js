@@ -7,6 +7,14 @@ const castSchema = new mongoose.Schema({
   profile_path: String
 }, { _id: false });
 
+const commentSchema = new mongoose.Schema({
+  userId: String,
+  userName: String,
+  content: String,
+  rating: Number,
+  createdAt: { type: Date, default: Date.now }
+}, { _id: false });
+
 const movieSchema = new mongoose.Schema({
   id_tmdb: Number,
   title: String,
@@ -19,7 +27,8 @@ const movieSchema = new mongoose.Schema({
   language: String,
   runtime: Number,
   popularity: Number,
-  cast: [castSchema]  // 👈 Ajout du casting
+  cast: [castSchema],
+  comments: [commentSchema], // Liste des commentaires et note de nos utilisateurs
 });
 
 export default mongoose.model('Movie', movieSchema);

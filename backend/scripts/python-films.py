@@ -18,7 +18,7 @@ params = {
 films_with_cast = []
 actors_with_movies = {}
 
-for page in range(1, 50):  # 🔁 5 pages, ajuste selon besoin
+for page in range(1, 201):  # 🔁 5 pages, ajuste selon besoin
     print(f"📥 Récupération page {page}")
     params["page"] = page
     res = requests.get(f"{BASE_URL}/movie/popular", headers=headers, params=params)
