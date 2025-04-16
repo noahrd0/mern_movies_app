@@ -1,7 +1,7 @@
 // App.js
 import React, { useState, useEffect } from 'react';
 import { XCircle, Star, StarHalf, Heart, LogIn, UserPlus, Search, Film, ListChecks } from 'lucide-react';
-import './App.css'; // Assurez-vous de créer ce fichier CSS
+import './App.css';
 
 // Composant principal App
 function App() {
@@ -13,66 +13,60 @@ function App() {
   const [username, setUsername] = useState('');
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Effet pour charger les films au démarrage
+  // Effet pour charger les films au démarrage depuis l'API
   useEffect(() => {
-    // Données d'exemple pour les films
-    const sampleMovies = [
-      {
-        id: 1,
-        title: "Inception",
-        director: "Christopher Nolan",
-        year: 2010,
-        poster: "https://via.placeholder.com/250x370",
-        description: "Un voleur qui s'infiltre dans les rêves des autres pour voler leurs secrets.",
-        rating: 4.8,
-        comments: [
-          { id: 1, user: "Alice", text: "Un chef-d'œuvre absolu !", rating: 5 },
-          { id: 2, user: "Bob", text: "Difficile à suivre mais captivant.", rating: 4 }
-        ]
-      },
-      {
-        id: 2,
-        title: "Pulp Fiction",
-        director: "Quentin Tarantino",
-        year: 1994,
-        poster: "https://via.placeholder.com/250x370",
-        description: "Les destins de plusieurs criminels s'entrecroisent de façon non-linéaire.",
-        rating: 4.7,
-        comments: [
-          { id: 1, user: "Charles", text: "Le meilleur film de Tarantino !", rating: 5 },
-          { id: 2, user: "David", text: "Les dialogues sont géniaux.", rating: 5 }
-        ]
-      },
-      {
-        id: 3,
-        title: "Le Parrain",
-        director: "Francis Ford Coppola",
-        year: 1972,
-        poster: "https://via.placeholder.com/250x370",
-        description: "L'histoire de la famille Corleone, une des grandes familles de la mafia italo-américaine.",
-        rating: 4.9,
-        comments: [
-          { id: 1, user: "Emma", text: "Un classique intemporel.", rating: 5 },
-          { id: 2, user: "Frank", text: "Marlon Brando est inoubliable.", rating: 5 }
-        ]
-      },
-      {
-        id: 4,
-        title: "Interstellar",
-        director: "Christopher Nolan",
-        year: 2014,
-        poster: "https://via.placeholder.com/250x370",
-        description: "Des explorateurs voyagent à travers un trou de ver pour sauver l'humanité.",
-        rating: 4.6,
-        comments: [
-          { id: 1, user: "Grace", text: "La musique et les effets visuels sont incroyables.", rating: 5 },
-          { id: 2, user: "Henry", text: "Une histoire touchante avec de la science.", rating: 4 }
-        ]
+    const fetchMovies = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch('http://localhost:5000/api/movies');
+        
+        if (!response.ok) {
+          throw new Error('Erreur lors du chargement des films');
+        }
+        
+        const moviesData = await response.json();
+        
+        // Transformer les données pour correspondre à notre structure
+        const formattedMovies = moviesData.map(movie => ({
+          id: movie._id,
+          id_tmdb: movie.id_tmdb,
+          title: movie.title,
+          original_title: movie.original_title,
+          director: movie.director || "Réalisateur inconnu",
+          year: new Date(movie.release_date).getFullYear(),
+          poster: movie.poster_path || "https://via.placeholder.com/250x370",
+          description: movie.overview,
+          rating: movie.vote_average / 2, // Convertir la note sur 10 à une note sur 5
+          runtime: movie.runtime,
+          genres: movie.genres,
+          popularity: movie.popularity,
+          comments: movie.comments || [] // S'il n'y a pas de commentaires dans l'API, on initialise un tableau vide
+        }));
+        
+        setMovies(formattedMovies);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Erreur lors de la récupération des films:", error);
+        setError(error.message);
+        setIsLoading(false);
       }
-    ];
+    };
+
+    fetchMovies();
     
-    setMovies(sampleMovies);
+    // Vérifier si l'utilisateur est connecté au chargement
+    const token = localStorage.getItem('token');
+    if (token) {
+      // Si un token existe, on pourrait vérifier sa validité via une API
+      const storedUsername = localStorage.getItem('username');
+      if (storedUsername) {
+        setIsLoggedIn(true);
+        setUsername(storedUsername);
+      }
+    }
   }, []);
 
   // Fonction pour ajouter un film à la wishlist
@@ -83,49 +77,125 @@ function App() {
     }
     
     if (!wishlist.some(m => m.id === movie.id)) {
-      setWishlist([...wishlist, movie]);
+      const updatedWishlist = [...wishlist, movie];
+      setWishlist(updatedWishlist);
+      
+      // Sauvegarde locale de la wishlist pour l'utilisateur connecté
+      if (isLoggedIn) {
+        localStorage.setItem(`wishlist_${username}`, JSON.stringify(updatedWishlist));
+      }
     }
   };
 
   // Fonction pour retirer un film de la wishlist
   const removeFromWishlist = (movieId) => {
-    setWishlist(wishlist.filter(movie => movie.id !== movieId));
+    const updatedWishlist = wishlist.filter(movie => movie.id !== movieId);
+    setWishlist(updatedWishlist);
+    
+    // Mise à jour de la sauvegarde locale
+    if (isLoggedIn) {
+      localStorage.setItem(`wishlist_${username}`, JSON.stringify(updatedWishlist));
+    }
   };
 
   // Fonction pour soumettre un nouveau commentaire
-  const submitComment = (movieId, commentText, rating) => {
+  const submitComment = async (movieId, commentText, rating) => {
     if (!isLoggedIn) {
       setShowLoginModal(true);
       return;
     }
     
-    const updatedMovies = movies.map(movie => {
-      if (movie.id === movieId) {
-        const newComment = {
-          id: movie.comments.length + 1,
-          user: username,
+    try {
+      // Envoi du commentaire à l'API
+      const response = await fetch(`http://localhost:5000/api/movies/${movieId}/comments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
           text: commentText,
           rating: rating
-        };
-        
-        // Calculer la nouvelle note moyenne
-        const totalRatings = [...movie.comments, newComment].reduce((sum, comment) => sum + comment.rating, 0);
-        const newRating = totalRatings / (movie.comments.length + 1);
-        
-        return {
-          ...movie,
-          comments: [...movie.comments, newComment],
-          rating: parseFloat(newRating.toFixed(1))
-        };
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Erreur lors de l\'ajout du commentaire');
       }
-      return movie;
-    });
-    
-    setMovies(updatedMovies);
-    
-    // Si on affiche actuellement le film, mettre à jour le film sélectionné
-    if (selectedMovie && selectedMovie.id === movieId) {
-      setSelectedMovie(updatedMovies.find(movie => movie.id === movieId));
+      
+      // Mise à jour locale en attendant une nouvelle récupération des données
+      const updatedMovies = movies.map(movie => {
+        if (movie.id === movieId) {
+          const newComment = {
+            id: Date.now(), // Temporaire avant récupération des vraies données
+            user: username,
+            text: commentText,
+            rating: rating
+          };
+          
+          // Calculer la nouvelle note moyenne
+          const totalRatings = [...(movie.comments || []), newComment].reduce((sum, comment) => sum + comment.rating, 0);
+          const newRating = totalRatings / ((movie.comments?.length || 0) + 1);
+          
+          return {
+            ...movie,
+            comments: [...(movie.comments || []), newComment],
+            rating: parseFloat(newRating.toFixed(1))
+          };
+        }
+        return movie;
+      });
+      
+      setMovies(updatedMovies);
+      
+      // Si on affiche actuellement le film, mettre à jour le film sélectionné
+      if (selectedMovie && selectedMovie.id === movieId) {
+        setSelectedMovie(updatedMovies.find(movie => movie.id === movieId));
+      }
+      
+      // Recharger les données du film pour avoir les informations à jour
+      fetchMovieDetails(movieId);
+      
+    } catch (error) {
+      console.error("Erreur lors de l'ajout du commentaire:", error);
+      alert("Une erreur est survenue lors de l'ajout de votre commentaire.");
+    }
+  };
+
+  // Fonction pour récupérer les détails d'un film spécifique
+  const fetchMovieDetails = async (movieId) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/movies/${movieId}`);
+      
+      if (!response.ok) {
+        throw new Error('Erreur lors du chargement des détails du film');
+      }
+      
+      const movieData = await response.json();
+      
+      // Formatter les données
+      const formattedMovie = {
+        id: movieData._id,
+        id_tmdb: movieData.id_tmdb,
+        title: movieData.title,
+        original_title: movieData.original_title,
+        director: movieData.director || "Réalisateur inconnu",
+        year: new Date(movieData.release_date).getFullYear(),
+        poster: movieData.poster_path || "https://via.placeholder.com/250x370",
+        description: movieData.overview,
+        rating: movieData.vote_average / 2, // Convertir la note sur 10 à une note sur 5
+        runtime: movieData.runtime,
+        genres: movieData.genres,
+        popularity: movieData.popularity,
+        comments: movieData.comments || []
+      };
+      
+      // Mettre à jour le film sélectionné et la liste des films
+      setSelectedMovie(formattedMovie);
+      setMovies(prev => prev.map(movie => movie.id === movieId ? formattedMovie : movie));
+      
+    } catch (error) {
+      console.error("Erreur lors de la récupération des détails du film:", error);
     }
   };
 
@@ -148,8 +218,15 @@ function App() {
         setUsername(data.user.name);
         setShowLoginModal(false);
   
-        // Stocker le token JWT dans le stockage local
+        // Stocker le token JWT et le nom d'utilisateur dans le stockage local
         localStorage.setItem('token', data.token);
+        localStorage.setItem('username', data.user.name);
+        
+        // Charger la wishlist de l'utilisateur
+        const savedWishlist = localStorage.getItem(`wishlist_${data.user.name}`);
+        if (savedWishlist) {
+          setWishlist(JSON.parse(savedWishlist));
+        }
   
         console.log('Connexion réussie :', data);
       } else {
@@ -182,6 +259,7 @@ function App() {
         setShowRegisterModal(false);
   
         localStorage.setItem('token', data.token);
+        localStorage.setItem('username', data.user.name);
   
         console.log('Inscription réussie :', data);
       } else {
@@ -199,10 +277,20 @@ function App() {
     setIsLoggedIn(false);
     setUsername('');
     localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    // On garde la wishlist en mémoire locale pour quand l'utilisateur se reconnectera
   };
 
   // Rendu des pages en fonction de la page active
   const renderContent = () => {
+    if (isLoading) {
+      return <div className="loading">Chargement des films...</div>;
+    }
+    
+    if (error) {
+      return <div className="error">Erreur: {error}</div>;
+    }
+    
     switch (activePage) {
       case 'movies':
         return <MoviesPage 
@@ -210,6 +298,7 @@ function App() {
                  onMovieClick={(movie) => {
                    setSelectedMovie(movie);
                    setActivePage('movieDetails');
+                   fetchMovieDetails(movie.id); // Récupérer les détails à jour
                  }} 
                />;
       case 'movieDetails':
@@ -230,6 +319,7 @@ function App() {
                  onMovieClick={(movie) => {
                    setSelectedMovie(movie);
                    setActivePage('movieDetails');
+                   fetchMovieDetails(movie.id); // Récupérer les détails à jour
                  }}
                />;
       default:
@@ -238,6 +328,7 @@ function App() {
                  onMovieClick={(movie) => {
                    setSelectedMovie(movie);
                    setActivePage('movieDetails');
+                   fetchMovieDetails(movie.id);
                  }} 
                />;
     }
@@ -343,23 +434,49 @@ function App() {
 // Composant pour la page des films
 function MoviesPage({ movies, onMovieClick }) {
   const [searchTerm, setSearchTerm] = useState('');
+  const [genreFilter, setGenreFilter] = useState('');
   
-  const filteredMovies = movies.filter(movie => 
-    movie.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    movie.director.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Extraire tous les genres uniques des films
+  const allGenres = [...new Set(movies.flatMap(movie => movie.genres || []))];
+  
+  const filteredMovies = movies.filter(movie => {
+    const matchesSearch = 
+      movie.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (movie.director && movie.director.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    const matchesGenre = genreFilter === '' || 
+      (movie.genres && movie.genres.includes(genreFilter));
+    
+    return matchesSearch && matchesGenre;
+  });
   
   return (
     <div className="movies-page">
-      <div className="search-bar">
-        <Search size={20} className="search-icon" />
-        <input
-          type="text"
-          placeholder="Rechercher un film ou un réalisateur..."
-          className="search-input"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+      <div className="search-filters">
+        <div className="search-bar">
+          <Search size={20} className="search-icon" />
+          <input
+            type="text"
+            placeholder="Rechercher un film ou un réalisateur..."
+            className="search-input"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        
+        <div className="filter-section">
+          <label className="filter-label">Filtrer par genre:</label>
+          <select 
+            className="genre-filter" 
+            value={genreFilter} 
+            onChange={(e) => setGenreFilter(e.target.value)}
+          >
+            <option value="">Tous les genres</option>
+            {allGenres.map(genre => (
+              <option key={genre} value={genre}>{genre}</option>
+            ))}
+          </select>
+        </div>
       </div>
       
       <h2 className="section-title">Films populaires</h2>
@@ -390,10 +507,20 @@ function MovieCard({ movie, onClick }) {
       />
       <div className="movie-info">
         <h3 className="movie-title">{movie.title}</h3>
-        <p className="movie-meta">{movie.director}, {movie.year}</p>
+        <p className="movie-meta">
+          {movie.year}
+          {movie.director && movie.director !== "Réalisateur inconnu" && `, ${movie.director}`}
+        </p>
+        {movie.genres && movie.genres.length > 0 && (
+          <div className="movie-genres">
+            {movie.genres.slice(0, 2).map(genre => (
+              <span key={genre} className="genre-tag">{genre}</span>
+            ))}
+          </div>
+        )}
         <div className="movie-rating">
           <RatingStars rating={movie.rating} />
-          <span className="rating-text">{movie.rating}/5</span>
+          <span className="rating-text">{movie.rating.toFixed(1)}/5</span>
         </div>
       </div>
     </div>
@@ -412,6 +539,14 @@ function MovieDetailsPage({ movie, onBack, onAddToWishlist, isInWishlist, onSubm
       setCommentText('');
       setRatingValue(5);
     }
+  };
+
+  // Formatage de la durée du film
+  const formatRuntime = (minutes) => {
+    if (!minutes) return "";
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours}h${mins > 0 ? ` ${mins}min` : ''}`;
   };
   
   return (
@@ -442,11 +577,28 @@ function MovieDetailsPage({ movie, onBack, onAddToWishlist, isInWishlist, onSubm
         
         <div className="movie-info-section">
           <h2 className="detail-title">{movie.title}</h2>
-          <p className="detail-meta">{movie.director}, {movie.year}</p>
+          {movie.original_title !== movie.title && (
+            <p className="original-title">Titre original: {movie.original_title}</p>
+          )}
+          
+          <div className="movie-metadata">
+            <p className="detail-meta">
+              {movie.year}
+              {movie.runtime && ` • ${formatRuntime(movie.runtime)}`}
+            </p>
+            
+            {movie.genres && movie.genres.length > 0 && (
+              <div className="genres-list">
+                {movie.genres.map(genre => (
+                  <span key={genre} className="genre-tag">{genre}</span>
+                ))}
+              </div>
+            )}
+          </div>
           
           <div className="detail-rating">
             <RatingStars rating={movie.rating} size={24} />
-            <span className="rating-value">{movie.rating}/5</span>
+            <span className="rating-value">{movie.rating.toFixed(1)}/5</span>
           </div>
           
           <div className="synopsis">
@@ -455,20 +607,26 @@ function MovieDetailsPage({ movie, onBack, onAddToWishlist, isInWishlist, onSubm
           </div>
           
           <div className="comments-section">
-            <h3 className="section-subheading">Commentaires ({movie.comments.length})</h3>
+            <h3 className="section-subheading">
+              Commentaires {movie.comments && `(${movie.comments.length})`}
+            </h3>
             
-            {movie.comments.map(comment => (
-              <div key={comment.id} className="comment">
-                <div className="comment-header">
-                  <span className="comment-user">{comment.user}</span>
-                  <div className="comment-rating">
-                    <RatingStars rating={comment.rating} size={16} />
-                    <span>{comment.rating}/5</span>
+            {movie.comments && movie.comments.length > 0 ? (
+              movie.comments.map(comment => (
+                <div key={comment.id} className="comment">
+                  <div className="comment-header">
+                    <span className="comment-user">{comment.user}</span>
+                    <div className="comment-rating">
+                      <RatingStars rating={comment.rating} size={16} />
+                      <span>{comment.rating}/5</span>
+                    </div>
                   </div>
+                  <p className="comment-text">{comment.text}</p>
                 </div>
-                <p className="comment-text">{comment.text}</p>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="no-comments">Aucun commentaire pour ce film.</p>
+            )}
             
             <form onSubmit={handleSubmitComment} className="comment-form">
               <h4 className="form-title">Ajouter un commentaire</h4>
@@ -537,10 +695,20 @@ function WishlistPage({ wishlist, onRemoveFromWishlist, onMovieClick }) {
               />
               <div className="wishlist-info" onClick={() => onMovieClick(movie)}>
                 <h3 className="movie-title">{movie.title}</h3>
-                <p className="movie-meta">{movie.director}, {movie.year}</p>
+                <p className="movie-meta">
+                  {movie.year}
+                  {movie.director && movie.director !== "Réalisateur inconnu" && `, ${movie.director}`}
+                </p>
+                {movie.genres && movie.genres.length > 0 && (
+                  <div className="movie-genres">
+                    {movie.genres.slice(0, 2).map(genre => (
+                      <span key={genre} className="genre-tag">{genre}</span>
+                    ))}
+                  </div>
+                )}
                 <div className="movie-rating">
                   <RatingStars rating={movie.rating} />
-                  <span className="rating-text">{movie.rating}/5</span>
+                  <span className="rating-text">{movie.rating.toFixed(1)}/5</span>
                 </div>
               </div>
               <button 
