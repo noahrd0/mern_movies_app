@@ -27,13 +27,13 @@ function App() {
       try {
         setIsLoading(true);
         const response = await fetch('http://localhost:5000/api/movies');
-        
+
         if (!response.ok) {
           throw new Error('Erreur lors du chargement des films');
         }
-        
+
         const moviesData = await response.json();
-        
+
         // Transformer les données pour correspondre à notre structure
         const formattedMovies = moviesData.map(movie => ({
           id: movie._id,
@@ -50,7 +50,7 @@ function App() {
           popularity: movie.popularity,
           comments: movie.comments || [] // S'il n'y a pas de commentaires dans l'API, on initialise un tableau vide
         }));
-        
+
         setMovies(formattedMovies);
         setIsLoading(false);
       } catch (error) {
@@ -61,7 +61,7 @@ function App() {
     };
 
     fetchMovies();
-    
+
     // Vérifier si l'utilisateur est connecté au chargement
     const token = localStorage.getItem('token');
     if (token) {
@@ -70,7 +70,7 @@ function App() {
       if (storedUsername) {
         setIsLoggedIn(true);
         setUsername(storedUsername);
-        
+
         // Charger la wishlist de l'utilisateur
         const savedWishlist = localStorage.getItem(`wishlist_${storedUsername}`);
         if (savedWishlist) {
@@ -86,11 +86,11 @@ function App() {
       setShowLoginModal(true);
       return;
     }
-    
+
     if (!wishlist.some(m => m.id === movie.id)) {
       const updatedWishlist = [...wishlist, movie];
       setWishlist(updatedWishlist);
-      
+
       // Sauvegarde locale de la wishlist pour l'utilisateur connecté
       if (isLoggedIn) {
         localStorage.setItem(`wishlist_${username}`, JSON.stringify(updatedWishlist));
@@ -102,7 +102,7 @@ function App() {
   const removeFromWishlist = (movieId) => {
     const updatedWishlist = wishlist.filter(movie => movie.id !== movieId);
     setWishlist(updatedWishlist);
-    
+
     // Mise à jour de la sauvegarde locale
     if (isLoggedIn) {
       localStorage.setItem(`wishlist_${username}`, JSON.stringify(updatedWishlist));
@@ -119,25 +119,25 @@ function App() {
         },
         body: JSON.stringify({ email, password }),
       });
-  
+
       const data = await response.json();
-  
+
       if (response.ok) {
         // Connexion réussie
         setIsLoggedIn(true);
         setUsername(data.user.name);
         setShowLoginModal(false);
-  
+
         // Stocker le token JWT et le nom d'utilisateur dans le stockage local
         localStorage.setItem('token', data.token);
         localStorage.setItem('username', data.user.name);
-        
+
         // Charger la wishlist de l'utilisateur
         const savedWishlist = localStorage.getItem(`wishlist_${data.user.name}`);
         if (savedWishlist) {
           setWishlist(JSON.parse(savedWishlist));
         }
-  
+
         console.log('Connexion réussie :', data);
       } else {
         // Gérer les erreurs (ex. : mauvais identifiants)
@@ -160,17 +160,17 @@ function App() {
         },
         body: JSON.stringify({ name: username, email, password }),
       });
-  
+
       const data = await response.json();
-  
+
       if (response.ok) {
         setIsLoggedIn(true);
         setUsername(data.user.name);
         setShowRegisterModal(false);
-  
+
         localStorage.setItem('token', data.token);
         localStorage.setItem('username', data.user.name);
-  
+
         console.log('Inscription réussie :', data);
       } else {
         console.error('Erreur d\'inscription :', data.message);
@@ -195,17 +195,17 @@ function App() {
     <Router>
       <div className="app-container">
         {/* Header */}
-        <Header 
-          isLoggedIn={isLoggedIn} 
-          username={username} 
-          onLogout={logout} 
-          onShowLogin={() => setShowLoginModal(true)} 
-          onShowRegister={() => setShowRegisterModal(true)} 
+        <Header
+          isLoggedIn={isLoggedIn}
+          username={username}
+          onLogout={logout}
+          onShowLogin={() => setShowLoginModal(true)}
+          onShowRegister={() => setShowRegisterModal(true)}
         />
-        
+
         {/* Navigation */}
         <Navigation wishlistCount={wishlist.length} />
-        
+
         {/* Main Content */}
         <main className="app-main container">
           {isLoading ? (
@@ -214,52 +214,57 @@ function App() {
             <div className="error">Erreur: {error}</div>
           ) : (
             <Routes>
-              <Route 
-                path="/" 
-                element={<MoviesPage movies={movies} />} 
-              />
-              <Route 
-                path="/movies/:id" 
+              <Route
+                path="/"
                 element={
-                  <MovieDetailsPage 
+                  <MoviesPage
+                    allGenres={[...new Set(movies.flatMap(movie => movie.genres || []))]}
+                  />
+                }
+              />
+              <Route
+                path="/movies/:id"
+                element={
+                  <MovieDetailsPage
                     onAddToWishlist={addToWishlist}
                     isLoggedIn={isLoggedIn}
                     wishlist={wishlist}
                   />
-                } 
+                }
               />
-              <Route 
-                path="/wishlist" 
+              <Route
+                path="/wishlist"
                 element={
-                  <WishlistPage 
-                    wishlist={wishlist} 
+                  <WishlistPage
+                    wishlist={wishlist}
                     onRemoveFromWishlist={removeFromWishlist}
                   />
-                } 
+                }
               />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
+
           )}
         </main>
-        
+
         {/* Footer */}
         <Footer />
-        
+
         {/* Modales */}
         {showLoginModal && (
-          <LoginModal 
-            onClose={() => setShowLoginModal(false)} 
-            onLogin={login} 
+          <LoginModal
+            onClose={() => setShowLoginModal(false)}
+            onLogin={login}
             onSwitchToRegister={() => {
               setShowLoginModal(false);
               setShowRegisterModal(true);
             }}
           />
         )}
-        
+
         {showRegisterModal && (
-          <RegisterModal 
-            onClose={() => setShowRegisterModal(false)} 
+          <RegisterModal
+            onClose={() => setShowRegisterModal(false)}
             onRegister={register}
             onSwitchToLogin={() => {
               setShowRegisterModal(false);
