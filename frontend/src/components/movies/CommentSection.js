@@ -20,18 +20,17 @@ function CommentSection({ comments, onSubmitComment, isLoggedIn, movieId }) {
       <h3 className="section-subheading">
         Commentaires {comments && `(${comments.length})`}
       </h3>
-      
       {comments && comments.length > 0 ? (
         comments.map(comment => (
-          <div key={comment.id} className="comment">
+          <div id={comment.userId} key={comment.id} className="comment">
             <div className="comment-header">
-              <span className="comment-user">{comment.user}</span>
+              <span className="comment-user">{comment.userName}</span>
               <div className="comment-rating">
                 <RatingStars rating={comment.rating} size={16} />
                 <span>{comment.rating}/5</span>
               </div>
             </div>
-            <p className="comment-text">{comment.text}</p>
+            <p className="comment-text">{comment.content}</p>
           </div>
         ))
       ) : (

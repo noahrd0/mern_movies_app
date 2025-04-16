@@ -691,3 +691,19 @@ body {
   font-size: 0.9rem;
   color: #6b7280;
 }
+
+/* --- Wishlist --- */
+
+.wishlist-movies {
+  display: flex;
+  flex-direction: row; 
+  flex-wrap: wrap; 
+  gap: 20px; 
+}
+ 
+.wishlist-item {
+  flex: 0 0 auto; 
+  width: 220px; 
+  margin-bottom: 15px;
+  position: relative;
+}

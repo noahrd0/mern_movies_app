@@ -77,7 +77,7 @@ export const MovieService = {
         throw new Error('Vous devez être connecté pour ajouter un commentaire');
       }
       
-      const response = await fetch(`${API_URL}/movies/${movieId}/comments`, {
+      const response = await fetch(`${API_URL}/movies/comments/${movieId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

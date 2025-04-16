@@ -63,7 +63,7 @@ function MovieDetailsPage({ onAddToWishlist, isLoggedIn, wishlist }) {
     
     try {
       // Envoi du commentaire à l'API
-      const response = await fetch(`http://localhost:5000/api/movies/${movieId}/comments`, {
+      const response = await fetch(`http://localhost:5000/api/movies/comments/${movieId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
