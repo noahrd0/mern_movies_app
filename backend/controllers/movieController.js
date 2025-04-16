@@ -58,3 +58,29 @@ export const getMoviesByGenre = async (req, res) => {
     res.status(500).json({ error: "Erreur lors du filtrage par genre" });
   }
 };
+
+// GET /api/movies/filter?search=&genre=
+export const filterMovies = async (req, res) => {
+  const { search = '', genre = '' } = req.query;
+
+  try {
+    const query = {};
+
+    if (search) {
+      const regex = new RegExp(search, 'i');
+      query.$or = [
+        { title: regex },
+        { director: regex }
+      ];
+    }
+
+    if (genre) {
+      query.genres = genre;
+    }
+
+    const movies = await Movie.find(query);
+    res.json(movies);
+  } catch (err) {
+    res.status(500).json({ error: "Erreur lors du filtrage", details: err.message });
+  }
+};
