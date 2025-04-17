@@ -2,13 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Header from './components/layout/Header';
+import AuthPage from './pages/AuthPage'; 
 import Navigation from './components/layout/Navigation';
 import Footer from './components/layout/Footer';
 import MoviesPage from './pages/MoviesPage';
 import MovieDetailsPage from './pages/MovieDetailsPage';
 import WishlistPage from './pages/WishlistPage';
-import LoginModal from './components/auth/LoginModal';
-import RegisterModal from './components/auth/RegisterModal';
 import './App.css';
 
 function App() {
@@ -16,8 +15,6 @@ function App() {
   const [wishlist, setWishlist] = useState([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState('');
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -82,10 +79,6 @@ function App() {
 
   // Fonction pour ajouter un film à la wishlist
   const addToWishlist = (movie) => {
-    if (!isLoggedIn) {
-      setShowLoginModal(true);
-      return;
-    }
 
     if (!wishlist.some(m => m.id === movie.id)) {
       const updatedWishlist = [...wishlist, movie];
@@ -126,7 +119,6 @@ function App() {
         // Connexion réussie
         setIsLoggedIn(true);
         setUsername(data.user.name);
-        setShowLoginModal(false);
 
         // Stocker le token JWT et le nom d'utilisateur dans le stockage local
         localStorage.setItem('token', data.token);
@@ -166,7 +158,6 @@ function App() {
       if (response.ok) {
         setIsLoggedIn(true);
         setUsername(data.user.name);
-        setShowRegisterModal(false);
 
         localStorage.setItem('token', data.token);
         localStorage.setItem('username', data.user.name);
@@ -199,8 +190,6 @@ function App() {
           isLoggedIn={isLoggedIn}
           username={username}
           onLogout={logout}
-          onShowLogin={() => setShowLoginModal(true)}
-          onShowRegister={() => setShowRegisterModal(true)}
         />
 
         {/* Navigation */}
@@ -222,6 +211,7 @@ function App() {
                   />
                 }
               />
+              <Route path="/auth" element={<AuthPage onLogin={login} onRegister={register} />} />
               <Route
                 path="/movies/:id"
                 element={
@@ -251,27 +241,6 @@ function App() {
         <Footer />
 
         {/* Modales */}
-        {showLoginModal && (
-          <LoginModal
-            onClose={() => setShowLoginModal(false)}
-            onLogin={login}
-            onSwitchToRegister={() => {
-              setShowLoginModal(false);
-              setShowRegisterModal(true);
-            }}
-          />
-        )}
-
-        {showRegisterModal && (
-          <RegisterModal
-            onClose={() => setShowRegisterModal(false)}
-            onRegister={register}
-            onSwitchToLogin={() => {
-              setShowRegisterModal(false);
-              setShowLoginModal(true);
-            }}
-          />
-        )}
       </div>
     </Router>
   );

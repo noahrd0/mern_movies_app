@@ -1,18 +1,18 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { LogIn, UserPlus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-function Header({ isLoggedIn, username, onLogout, onShowLogin, onShowRegister }) {
+function Header({ isLoggedIn, username, onLogout }) {
+  const navigate = useNavigate();
   return (
     <header className="app-header">
       <div className="container">
-        <h1 className="app-title">
-          <Link to="/">CinéFriends</Link>
+      <h1 className="app-title" onClick={() => navigate("/")}>
+          🎬 CinéFriends
         </h1>
         <div className="header-controls">
           {isLoggedIn ? (
             <div className="user-info">
-              <span>Bonjour, {username}</span>
+              <span>Bienvenue, {username}</span>
               <button 
                 className="btn btn-logout"
                 onClick={onLogout}
@@ -24,17 +24,9 @@ function Header({ isLoggedIn, username, onLogout, onShowLogin, onShowRegister })
             <div className="auth-buttons">
               <button 
                 className="btn btn-login"
-                onClick={onShowLogin}
+                onClick={() => navigate("/auth")}
               >
-                <LogIn size={16} />
-                Connexion
-              </button>
-              <button 
-                className="btn btn-register"
-                onClick={onShowRegister}
-              >
-                <UserPlus size={16} />
-                Inscription
+                Connexion / Inscription
               </button>
             </div>
           )}

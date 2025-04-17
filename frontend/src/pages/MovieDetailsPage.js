@@ -1,7 +1,6 @@
 // src/pages/MovieDetailsPage.js
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Heart } from 'lucide-react';
 import RatingStars from '../components/common/RatingStars';
 import CommentSection from '../components/movies/CommentSection';
 

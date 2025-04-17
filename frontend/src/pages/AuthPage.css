@@ -1,0 +1,23 @@
+.auth-page {
+    padding: 2rem;
+    text-align: center;
+  }
+  
+  .auth-toggle {
+    margin-bottom: 1rem;
+  }
+  
+  .auth-toggle button {
+    margin: 0 8px;
+    padding: 8px 16px;
+    background: #eee;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  
+  .auth-toggle button.active {
+    background: #333;
+    color: white;
+  }
+  
