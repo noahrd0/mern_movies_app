@@ -12,12 +12,12 @@ function LoginModal({ onClose, onLogin, onSwitchToRegister }) {
   
   return (
     <div className="modal-overlay">
-      <div className="modal">
+      <div className="modal-content">
         <button className="close-btn" onClick={onClose}>
           <XCircle size={24} />
         </button>
         
-        <h2 className="modal-title">Connexion</h2>
+        <h2 className="modal-header">Connexion</h2>
         
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
@@ -42,12 +42,12 @@ function LoginModal({ onClose, onLogin, onSwitchToRegister }) {
             />
           </div>
           
-          <button type="submit" className="submit-btn">
+          <button type="submit" className="submit-btn full-width">
             Se connecter
           </button>
         </form>
         
-        <p className="auth-switch">
+        <p className="auth-switch form-footer">
           Pas encore de compte ? 
           <button className="text-btn" onClick={onSwitchToRegister}>
             S'inscrire

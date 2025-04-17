@@ -18,7 +18,7 @@ function MovieCard({ movie }) {
         </p>
         {movie.genres && movie.genres.length > 0 && (
           <div className="movie-genres">
-            {movie.genres.slice(0, 2).map(genre => (
+            {movie.genres.map(genre => (
               <span key={genre} className="genre-tag">{genre}</span>
             ))}
           </div>

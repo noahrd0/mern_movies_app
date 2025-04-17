@@ -22,12 +22,12 @@ function RegisterModal({ onClose, onRegister, onSwitchToLogin }) {
   
   return (
     <div className="modal-overlay">
-      <div className="modal">
+      <div className="modal-content">
         <button className="close-btn" onClick={onClose}>
           <XCircle size={24} />
         </button>
         
-        <h2 className="modal-title">Inscription</h2>
+        <h2 className="modal-header">Inscription</h2>
         
         {error && <p className="error-message">{error}</p>}
         
@@ -76,12 +76,12 @@ function RegisterModal({ onClose, onRegister, onSwitchToLogin }) {
             />
           </div>
           
-          <button type="submit" className="submit-btn">
+          <button type="submit" className="submit-btn full-width">
             S'inscrire
           </button>
         </form>
         
-        <p className="auth-switch">
+        <p className="auth-switch form-footer">
           Déjà inscrit ? 
           <button className="text-btn" onClick={onSwitchToLogin}>
             Se connecter

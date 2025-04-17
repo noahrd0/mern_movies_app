@@ -589,6 +589,13 @@ body {
   margin-bottom: 0.5rem;
 }
 
+.form-group input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+}
+
 .form-input {
   width: 100%;
   padding: 0.75rem;
@@ -731,4 +738,21 @@ body {
 
 .page-btn:hover {
   background-color: #93c5fd;
+}
+
+.genre-tag {
+  display: inline-block;
+  background-color: #fbbf24;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: bold;
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  text-transform: capitalize;
+}
+
+.movie-genres, .genres-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
 }

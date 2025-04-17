@@ -5,7 +5,13 @@ import RatingStars from '../common/RatingStars';
 function CommentSection({ comments, onSubmitComment, isLoggedIn, movieId }) {
   const [commentText, setCommentText] = useState('');
   const [ratingValue, setRatingValue] = useState(5);
-  
+
+  const calculateAverageRating = () => {
+    if (!comments || comments.length === 0) return 0;
+    const totalRating = comments.reduce((sum, comment) => sum + comment.rating, 0);
+    return (totalRating / comments.length).toFixed(1);
+  };
+
   const handleSubmitComment = (e) => {
     e.preventDefault();
     if (commentText.trim()) {
@@ -14,11 +20,16 @@ function CommentSection({ comments, onSubmitComment, isLoggedIn, movieId }) {
       setRatingValue(5);
     }
   };
-  
+
   return (
     <div className="comments-section">
       <h3 className="section-subheading">
-        Commentaires {comments && `(${comments.length})`}
+        Commentaires {comments && `(${comments.length}) `} 
+        {comments && comments.length > 0 && (
+          <span className="average-rating">
+            - Note CinéFriends : {calculateAverageRating()}/5
+          </span>
+        )}
       </h3>
       {comments && comments.length > 0 ? (
         comments.map(comment => (
