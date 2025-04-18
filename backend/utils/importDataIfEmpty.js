@@ -1,5 +1,5 @@
 import Movie from '../models/Movie.js';
-import Actor from '../models/Actor.js';
+import Actor from '../models/Actror.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';

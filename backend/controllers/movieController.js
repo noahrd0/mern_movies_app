@@ -3,14 +3,27 @@ import User from '../models/UserModel.js';
 import mongoose from 'mongoose';
 
 // GET /api/movies → tous les films
+// GET /api/movies?page=1
 export const getAllMovies = async (req, res) => {
+  const { page = 1 } = req.query;
+  const limit = 20; // ou n’importe quel nombre par page
+  const skip = (parseInt(page) - 1) * limit;
+
   try {
-    const movies = await Movie.find().limit(100);
-    res.json(movies);
+    const total = await Movie.countDocuments(); // nombre total de films
+    const movies = await Movie.find().skip(skip).limit(limit);
+
+    res.json({
+      movies,
+      total,
+      page: parseInt(page),
+      pages: Math.ceil(total / limit),
+    });
   } catch (err) {
-    res.status(500).json({ error: "Erreur serveur" });
+    res.status(500).json({ error: "Erreur serveur", details: err.message });
   }
 };
+
 
 // GET /api/movies/:id → film par ID
 export const getMovieById = async (req, res) => {
@@ -106,7 +119,7 @@ export const addCommentToMovie = async (req, res) => {
 // GET /api/movies/filter?search=&genre=&page=
 export const filterMovies = async (req, res) => {
   const { search = '', genre = '', page = 1 } = req.query;
-  const limit = 100;
+  const limit = 20;
   const skip = (parseInt(page) - 1) * limit;
 
   try {

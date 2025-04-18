@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Header from './components/layout/Header';
 import Navigation from './components/layout/Navigation';
 import Footer from './components/layout/Footer';
-import MoviesPage from './pages/MoviesPage';
+import MoviesPage from './pages/HomePage';
 import MovieDetailsPage from './pages/MovieDetailsPage';
 import WishlistPage from './pages/WishlistPage';
 import LoginModal from './components/auth/LoginModal';
@@ -26,15 +26,18 @@ function App() {
     const fetchMovies = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('http://localhost:5000/api/movies');
+
+        // Appel vers l'endpoint (tu peux ajouter `?page=1` si besoin)
+        const response = await fetch('http://localhost:5000/api/movies?page=1');
 
         if (!response.ok) {
           throw new Error('Erreur lors du chargement des films');
         }
 
-        const moviesData = await response.json();
+        const data = await response.json();
+        const moviesData = data.movies; // <- accès correct à la clé
 
-        // Transformer les données pour correspondre à notre structure
+        // Transformation au format attendu
         const formattedMovies = moviesData.map(movie => ({
           id: movie._id,
           id_tmdb: movie.id_tmdb,
@@ -44,11 +47,11 @@ function App() {
           year: new Date(movie.release_date).getFullYear(),
           poster: movie.poster_path || "https://via.placeholder.com/250x370",
           description: movie.overview,
-          rating: movie.vote_average / 2, // Convertir la note sur 10 à une note sur 5
+          rating: movie.vote_average / 2,
           runtime: movie.runtime,
           genres: movie.genres,
           popularity: movie.popularity,
-          comments: movie.comments || [] // S'il n'y a pas de commentaires dans l'API, on initialise un tableau vide
+          comments: movie.comments || []
         }));
 
         setMovies(formattedMovies);
@@ -65,13 +68,11 @@ function App() {
     // Vérifier si l'utilisateur est connecté au chargement
     const token = localStorage.getItem('token');
     if (token) {
-      // Si un token existe, on pourrait vérifier sa validité via une API
       const storedUsername = localStorage.getItem('username');
       if (storedUsername) {
         setIsLoggedIn(true);
         setUsername(storedUsername);
 
-        // Charger la wishlist de l'utilisateur
         const savedWishlist = localStorage.getItem(`wishlist_${storedUsername}`);
         if (savedWishlist) {
           setWishlist(JSON.parse(savedWishlist));
@@ -79,6 +80,7 @@ function App() {
       }
     }
   }, []);
+
 
   // Fonction pour ajouter un film à la wishlist
   const addToWishlist = (movie) => {
